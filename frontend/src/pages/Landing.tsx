@@ -91,6 +91,22 @@ export const Landing: React.FC = () => {
         <div className="container relative mx-auto px-6 z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Column: Text */}
           <div className="space-y-10 text-center lg:text-left pt-12 lg:pt-0">
+            {/* Brand Logo Block */}
+            <div className="flex justify-center lg:justify-start mb-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-indigo-600 shadow-md">
+                  <span className="text-white font-black text-2xl leading-none">N</span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="font-bold text-2xl leading-none tracking-tight">
+                    <span className="text-slate-900">Niti</span>
+                    <span className="text-orange-600">Setu</span>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Policy Intelligence</span>
+                </div>
+              </div>
+            </div>
+
             {/* Logic Badge */}
             <div className="flex justify-center lg:justify-start animate-in fade-in slide-in-from-bottom-4 duration-700">
               <Badge className="px-5 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-3 rounded-full text-xs font-bold tracking-widest uppercase">

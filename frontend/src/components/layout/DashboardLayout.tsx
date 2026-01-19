@@ -60,17 +60,17 @@ function SidebarContents() {
     <>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm border p-1">
-            <img src="/emblem.png" alt="NitiSetu" className="h-full w-full object-contain" onError={(e) => {
-              // Fallback if image fails
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard h-5 w-5 text-primary"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg>';
-            }} />
+          {/* Gradient N Logo from User Image */}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-indigo-600 shadow-md">
+            <span className="text-white font-black text-xl leading-none">N</span>
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight text-sidebar-foreground">NitiSetu</span>
-              <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/70">Policy Intelligence</span>
+              <div className="font-bold text-xl leading-none tracking-tight">
+                <span className="text-white">Niti</span>
+                <span className="text-orange-500">Setu</span>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/80 font-medium mt-1">Policy Intelligence</span>
             </div>
           )}
         </Link>
@@ -171,8 +171,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <Sidebar collapsible="icon" className="border-r border-sidebar-border">
           <SidebarContents />
         </Sidebar>
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 border-b bg-card flex items-center justify-between px-4">
+        <div className="flex-1 flex flex-col relative z-0">
+          {/* Background Image Layer */}
+          <div
+            className="absolute inset-0 z-[-1] bg-cover bg-center bg-no-repeat opacity-20 pointer-events-none"
+            style={{ backgroundImage: "url('/landing-bg-vivid.png')" }}
+          />
+          <div className="absolute inset-0 z-[-1] bg-white/70 pointer-events-none mix-blend-overlay" />
+
+          <header className="h-14 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-20">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -187,7 +194,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               </Badge>
             </div>
           </header>
-          <main className="flex-1 overflow-auto bg-background">
+          <main className="flex-1 overflow-auto bg-transparent relative z-10">
             {children}
             <AskNiti />
           </main>
