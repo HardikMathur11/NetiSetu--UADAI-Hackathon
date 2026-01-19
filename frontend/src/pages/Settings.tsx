@@ -12,15 +12,15 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Settings as SettingsIcon, Server, CheckCircle2, XCircle, Loader2, RefreshCw } from 'lucide-react';
 
 export const Settings: React.FC = () => {
-  const { 
-    backendUrl, 
-    setBackendUrl, 
-    isBackendConnected, 
+  const {
+    backendUrl,
+    setBackendUrl,
+    isBackendConnected,
     setIsBackendConnected,
     isDemoMode,
-    setIsDemoMode 
+    setIsDemoMode
   } = useApp();
-  
+
   const [urlInput, setUrlInput] = useState(backendUrl);
   const [isChecking, setIsChecking] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
@@ -95,33 +95,13 @@ export const Settings: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Server className="h-5 w-5" />
-              Backend API Configuration
+              Backend Status
             </CardTitle>
             <CardDescription>
-              Connect to your Python/FastAPI backend server
+              Connection status to the NitiSetu Analytics Engine.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="backend-url">Backend URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="backend-url"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  placeholder="http://localhost:8000"
-                  className="flex-1"
-                />
-                <Button onClick={handleSaveUrl} disabled={isChecking}>
-                  {isChecking ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    'Save & Test'
-                  )}
-                </Button>
-              </div>
-            </div>
-
             {/* Connection Status */}
             <div className="p-4 rounded-lg bg-muted">
               <div className="flex items-center justify-between">
@@ -136,9 +116,9 @@ export const Settings: React.FC = () => {
                       {isBackendConnected ? 'Connected' : 'Not Connected'}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {isBackendConnected 
-                        ? `Backend is reachable at ${backendUrl}`
-                        : 'Unable to reach backend server'}
+                      {isBackendConnected
+                        ? 'Backend connection established successfully.'
+                        : 'Unable to reach backend server.'}
                     </p>
                   </div>
                 </div>
@@ -157,7 +137,7 @@ export const Settings: React.FC = () => {
             {!isBackendConnected && !isDemoMode && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  Backend is not connected. Either enable Demo Mode or start your Python backend server.
+                  Backend is not connected. Please check your network or contact support.
                 </AlertDescription>
               </Alert>
             )}
