@@ -101,7 +101,11 @@ export const Policies: React.FC = () => {
   const handleComplete = () => { setGuidedStep(3); };
 
   if (!currentDataset) {
-    return <EmptyState title="No Policies Generated" description="Select a dataset to view AI-driven policy recommendations." />;
+    return (
+      <DashboardLayout>
+        <EmptyState title="No Policies Generated" description="Select a dataset to view AI-driven policy recommendations." />
+      </DashboardLayout>
+    );
   }
 
   // Combine loading states for a single check

@@ -59,7 +59,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
 
   // Backend state
-  const [backendUrl, setBackendUrl] = useState<string>('http://localhost:8000');
+  // Initialize from Environment if available, else localhost
+  const [backendUrl, setBackendUrl] = useState<string>(
+    import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  );
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(() => {
     const saved = localStorage.getItem('isBackendConnected');
     // If we have a file ID, assume we were connected

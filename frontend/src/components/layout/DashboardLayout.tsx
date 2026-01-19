@@ -60,13 +60,17 @@ function SidebarContents() {
     <>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-primary">
-            <LayoutDashboard className="h-5 w-5 text-sidebar-primary-foreground" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm border p-1">
+            <img src="/emblem.png" alt="NitiSetu" className="h-full w-full object-contain" onError={(e) => {
+              // Fallback if image fails
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard h-5 w-5 text-primary"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg>';
+            }} />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sidebar-foreground">UIDAI Analytics</span>
-              <span className="text-xs text-sidebar-foreground/70">Decision Support Platform</span>
+              <span className="font-bold text-lg leading-tight text-sidebar-foreground">NitiSetu</span>
+              <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/70">Policy Intelligence</span>
             </div>
           )}
         </Link>
