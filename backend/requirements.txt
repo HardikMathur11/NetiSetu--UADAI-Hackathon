@@ -8,3 +8,4 @@ motor
 dnspython
 pydantic
 google-genai
+python-dotenv
