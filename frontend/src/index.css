@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* UIDAI Decision Support Platform - Government Professional Theme */
+
+@layer base {
+  :root {
+    /* Government-friendly blue color scheme */
+    --background: 210 20% 98%;
+    --foreground: 220 30% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%;
+
+    /* Deep government blue */
+    --primary: 217 71% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 25% 93%;
+    --secondary-foreground: 220 30% 15%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 15% 50%;
+
+    --accent: 210 40% 94%;
+    --accent-foreground: 217 71% 35%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 217 71% 35%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar - darker government blue */
+    --sidebar-background: 220 30% 18%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 210 100% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 25% 25%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 25% 25%;
+    --sidebar-ring: 210 100% 70%;
+
+    /* Custom semantic colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Chart colors */
+    --chart-primary: 217 71% 45%;
+    --chart-secondary: 142 71% 45%;
+    --chart-tertiary: 38 92% 50%;
+    --chart-quaternary: 280 60% 55%;
+    --chart-prediction: 199 89% 48%;
+
+    /* Confidence level colors */
+    --confidence-high: 142 71% 45%;
+    --confidence-medium: 38 92% 50%;
+    --confidence-low: 15 75% 55%;
+  }
+
+  .dark {
+    --background: 220 30% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 30% 12%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 30% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 210 100% 65%;
+    --primary-foreground: 220 30% 10%;
+
+    --secondary: 220 25% 20%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 220 25% 18%;
+    --muted-foreground: 210 15% 60%;
+
+    --accent: 220 25% 22%;
+    --accent-foreground: 210 100% 70%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 25% 22%;
+    --input: 220 25% 22%;
+    --ring: 210 100% 65%;
+
+    --sidebar-background: 220 30% 6%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 210 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 25% 15%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 220 25% 15%;
+    --sidebar-ring: 210 100% 65%;
+
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 45%;
+    --info-foreground: 0 0% 100%;
+
+    --chart-primary: 210 100% 60%;
+    --chart-secondary: 142 71% 50%;
+    --chart-tertiary: 38 92% 55%;
+    --chart-quaternary: 280 60% 60%;
+    --chart-prediction: 199 89% 55%;
+
+    --confidence-high: 142 71% 50%;
+    --confidence-medium: 38 92% 55%;
+    --confidence-low: 15 75% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-gov {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217 71% 25%) 100%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

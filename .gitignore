@@ -1,0 +1,31 @@
+# System
+.DS_Store
+Thumbs.db
+*.log
+
+# VS Code
+.vscode/
+
+# Frontend (Node)
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+
+# Backend (Python)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+backend/.env
+backend/venv/
+backend/__pycache__/
+
+# Project Specific
+backend/data_storage/
+*.csv
+!backend/data/demo_data.csv
