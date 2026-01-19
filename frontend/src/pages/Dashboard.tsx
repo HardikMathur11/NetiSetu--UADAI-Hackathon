@@ -206,7 +206,7 @@ const DatasetCard: React.FC<{ dataset: Dataset; onSelect: () => void }> = ({ dat
 };
 
 export const Dashboard: React.FC = () => {
-  const { isDemoMode, currentDataset, setCurrentDataset } = useApp();
+  const { isDemoMode, currentDataset, setCurrentDataset, setCurrentFileId } = useApp();
 
   return (
     <DashboardLayout>
