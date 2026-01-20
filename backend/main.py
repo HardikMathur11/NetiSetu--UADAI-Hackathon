@@ -464,8 +464,8 @@ async def get_history():
     import asyncio
     
     # Retry loop to handle "DB Waking Up" silently
-    # Try for up to 5 seconds (Render usually takes 2-5s if it was just hit)
-    for attempt in range(5):
+    # Try for up to 15 seconds (Render + CA Atlas Free Tier can take 10s+ to wake)
+    for attempt in range(15):
         datasets_col = get_collection("datasets")
         if datasets_col is not None:
             try:
