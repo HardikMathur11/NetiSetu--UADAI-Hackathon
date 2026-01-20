@@ -15,12 +15,15 @@ class Database:
            return
 
         try:
-            cls.client = AsyncIOMotorClient(mongo_uri)
+            # Set a 5-second timeout so app doesn't hang if DB is unreachable (e.g. whitelist issues)
+            cls.client = AsyncIOMotorClient(mongo_uri, serverSelectionTimeoutMS=5000)
+            
             # Ping to verify
             await cls.client.admin.command('ping')
             print("Successfully connected to MongoDB!")
         except Exception as e:
             print(f"Failed to connect to MongoDB: {e}")
+            print("App will continue in 'Offline Mode' (In-Memory Storage).")
             cls.client = None
 
     @classmethod
