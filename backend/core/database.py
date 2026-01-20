@@ -35,10 +35,22 @@ class Database:
 
     @classmethod
     def get_db(cls):
-        """Get database instance."""
+        """Get database instance. Lazily connects if not connected."""
         if cls.client is None:
-             # Fallback or error handling if DB is strictly required
-             return None
+             # Lazy Reconnect: Attempt to create client if missing (e.g. startup failed or never ran)
+             # Motor client creation is synchronous, only network ops are async
+             mongo_uri = os.getenv("MONGO_URI")
+             if mongo_uri:
+                 try:
+                     print("Attemping Lazy DB Reconnection...")
+                     cls.client = AsyncIOMotorClient(mongo_uri, serverSelectionTimeoutMS=5000)
+                     print("Lazy Reconnection: Client created.")
+                 except Exception as e:
+                     print(f"Lazy Reconnection failed: {e}")
+                     return None
+             else:
+                 return None
+
         return cls.client[cls.db_name]
 
 # Helper to get collection
