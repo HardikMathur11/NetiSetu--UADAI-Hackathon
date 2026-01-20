@@ -123,15 +123,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const errorMessage = err.message || "Failed to restore session";
           setError(errorMessage);
 
-          // Clear session data but keep ID briefly so UI can show error, 
-          // OR clear ID but show global toast? 
-          // Let's clear ID to prevent infinite loops, but save error.
-          setCurrentFileId(null);
+          // IMPORTANT: Do NOT clear currentFileId here. 
+          // If the backend is waking up (Render cold start) or there's a network blip,
+          // clearing the ID destroys the user's session permanently.
+          // We should allow them to refresh the page to retry.
+
+          // setCurrentFileId(null); // Access this removed to fix premature session destruction
           setCurrentDataset(null);
           setUploadedData(null);
 
-          // Use alert for immediate feedback since we don't have a toast component ready-wired
-          alert(`Session Error: ${errorMessage}. Please re-upload the file.`);
+          // Optional: You could show a less intrusive toast here instead of alert
+          // but for now, we just suppress the destructive action.
         }
       }
     };
