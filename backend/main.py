@@ -320,6 +320,7 @@ async def debug_connection():
         "mongo_uri_configured": bool(os.getenv("MONGO_URI")),
         "client_initialized": False,
         "ping_success": False,
+        "dataset_count": -1,
         "error": None
     }
     
@@ -336,8 +337,15 @@ async def debug_connection():
              try:
                  await Database.client.admin.command('ping')
                  status["ping_success"] = True
+                 
+                 # Check access to data
+                 datasets_col = get_collection("datasets")
+                 if datasets_col is not None:
+                     status["dataset_count"] = await datasets_col.count_documents({})
+                 else:
+                     status["error"] = "Connected, but cannot get datasets collection"
              except Exception as e:
-                 status["error"] = f"Ping failed: {str(e)}"
+                 status["error"] = f"Ping/Query failed: {str(e)}"
         else:
              status["error"] = "Client failed to initialize (Lazy load returned None)"
              
