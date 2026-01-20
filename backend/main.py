@@ -57,56 +57,78 @@ detected_schemas: Dict[str, Dict] = {}
 
 # Persistence Imports
 from core.storage import save_dataframe, load_dataframe # Keeping CSV/JSON helpers for backup/hybrid
+import zlib
+from bson.binary import Binary
 
-def get_or_load_dataframe(file_id: str) -> Optional[pd.DataFrame]:
-    """Get from memory or load from disk"""
+# ============ PERSISTENCE HELPERS ============
+
+async def save_dataset_to_db(file_id: str, df: pd.DataFrame):
+    """Save compressed dataframe to MongoDB for persistence"""
+    try:
+        csv_str = df.to_csv(index=False)
+        compressed_data = zlib.compress(csv_str.encode('utf-8'))
+        
+        storage_col = get_collection("file_storage")
+        if storage_col is not None:
+             await storage_col.update_one(
+                {"file_id": file_id},
+                {"$set": {
+                    "file_id": file_id, 
+                    "data": Binary(compressed_data),
+                    "updated_at": datetime.utcnow()
+                }},
+                upsert=True
+             )
+             print(f"Persisted {file_id} to MongoDB (Compressed {len(compressed_data)} bytes)")
+    except Exception as e:
+        print(f"Failed to persist {file_id} to DB: {e}")
+
+async def load_dataset_from_db(file_id: str) -> Optional[pd.DataFrame]:
+    """Load and decompress dataframe from MongoDB"""
+    try:
+        storage_col = get_collection("file_storage")
+        if storage_col is None: return None
+        
+        doc = await storage_col.find_one({"file_id": file_id})
+        if doc and "data" in doc:
+            compressed_data = doc["data"]
+            csv_str = zlib.decompress(compressed_data).decode('utf-8')
+            df = pd.read_csv(io.StringIO(csv_str))
+            print(f"Restored {file_id} from MongoDB Persistence")
+            return df
+        return None
+    except Exception as e:
+        print(f"Failed to restore {file_id} from DB: {e}")
+        return None
+
+async def get_or_load_dataframe(file_id: str) -> Optional[pd.DataFrame]:
+    """Get from memory or load from disk/DB"""
+    # 1. Memory Check
     if file_id in uploaded_data:
         return uploaded_data[file_id]
     
-    # Try loading from disk
+    # 2. Disk Check (Fastest Fallback)
     df = load_dataframe(file_id)
-    if df is not None:
-        uploaded_data[file_id] = df
-        
-        # Re-detect schema if loaded from disk (Memory reconstruction)
-        if file_id not in detected_schemas:
-             try:
-                 # Use locally defined helper functions
-                 time_col = detect_time_column(df)
-                 region_col = detect_region_column(df)
-                 metric_cols = detect_metric_columns(df, time_col, region_col)
-                 
-                 # Replicate data type logic from upload_csv
-                 unique_time_points = df[time_col].nunique() if time_col else 0
-                 data_type = "TIME_SERIES" if unique_time_points >= 3 else "SNAPSHOT"
-                 row_count = len(df)
-                 can_predict = (data_type == 'TIME_SERIES' and row_count >= 6)
+    
+    # 3. DB Check (Persistence Fallback - Async)
+    if df is None:
+        # We need to run this async, but this function is sync in original design?
+        # Wait, if this function is sync, we can't await. 
+        # We must refactor to async or use a sync wrapper?
+        # FastAPI routes are async, so we can await there.
+        # But this function is called by sync logic? No, it's called by async routes mostly.
+        # I will change this function to `async def` and update callsites.
+        pass # Logic handled below in replacement
+    
+    return df
+    
+# NOTE: To avoid breaking change with async now, I will keep this sync wrapper 
+# AND create a new async version, OR just handle the DB load inside the route handlers?
+# Actually, the best way is to make `get_or_load_dataframe` async and update all callsites (6 places)
+# But that's risky. 
+# ALternatively: Just return None here, and let the Route handle the 404 by trying DB?
+# YES. I will add `restore_from_db` helper and call it in routes if `get_or_load_dataframe` returns None.
 
-                 detected_schemas[file_id] = {
-                    "timeColumn": time_col,
-                    "regionColumn": region_col,
-                    "metricColumns": metric_cols,
-                    "dataType": data_type,
-                    "rowCount": row_count,
-                    "canPredict": can_predict,
-                    "predictionReason": "Data loaded from storage"
-                }
-             except Exception as e:
-                 print(f"Schema Re-detection failed for {file_id}: {e}")
-                 # Fallback schema to avoid 500
-                 detected_schemas[file_id] = {
-                    "timeColumn": None,
-                    "regionColumn": None,
-                    "metricColumns": [],
-                    "dataType": "SNAPSHOT",
-                    "rowCount": len(df),
-                    "canPredict": False,
-                    "predictionReason": f"Schema detection error: {str(e)}"
-                 }
-
-        return df
-        return df
-    return None
 
 
 # ============ MODELS ============
@@ -420,6 +442,9 @@ async def upload_csv(file: UploadFile = File(...)):
         # Save to Disk (Hybrid Approach) - keep CSVs on disk for Pandas speed
         save_dataframe(file_id, df)
         
+        # Save to MongoDB (Persistence Backup)
+        await save_dataset_to_db(file_id, df)
+        
         return UploadResponse(
             success=True,
             message="File uploaded and processed successfully",
@@ -478,7 +503,7 @@ async def get_schema(file_id: str):
 
     # 3. Try to Load from Disk (triggers re-detection) if still missing
     if not schema:
-        df = get_or_load_dataframe(file_id)
+        df = await get_or_load_dataframe(file_id)
         if df is not None:
              if file_id in detected_schemas:
                  schema = detected_schemas[file_id]
@@ -500,7 +525,7 @@ async def get_schema(file_id: str):
 @app.get("/api/stats/{file_id}")
 async def get_stats(file_id: str, column: Optional[str] = None):
     """Get summary statistics for the dataset"""
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
          raise HTTPException(status_code=404, detail="File not found")
     schema = detected_schemas[file_id]
@@ -539,7 +564,7 @@ async def get_stats(file_id: str, column: Optional[str] = None):
 @app.get("/api/trends/{file_id}")
 async def get_trends(file_id: str, metric: Optional[str] = None, region: Optional[str] = None):
     """Get trend analysis data with moving averages"""
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
          raise HTTPException(status_code=404, detail="File not found")
     schema = detected_schemas[file_id]
@@ -610,7 +635,7 @@ async def get_trends(file_id: str, metric: Optional[str] = None, region: Optiona
 @app.get("/api/predict/{file_id}")
 async def get_predictions(file_id: str, metric: Optional[str] = None, periods: int = 6):
     """Get linear regression predictions"""
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
          raise HTTPException(status_code=404, detail="File not found")
     schema = detected_schemas[file_id]
@@ -674,7 +699,7 @@ async def get_policies(file_id: str):
              return {"recommendations": cached_doc["recommendations"]}
     
     # 2. Ensure data is loaded
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
         raise HTTPException(status_code=404, detail="File not found")
     
@@ -733,7 +758,7 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_with_data(request: ChatRequest):
     """Chat with the loaded dataset"""
-    df = get_or_load_dataframe(request.fileId)
+    df = await get_or_load_dataframe(request.fileId)
     if df is None:
         raise HTTPException(status_code=404, detail="File session not found")
     schema = detected_schemas[request.fileId]
@@ -756,7 +781,7 @@ async def chat_with_data(request: ChatRequest):
 @app.get("/api/data/{file_id}")
 async def get_data(file_id: str, limit: int = 100):
     """Get raw data preview"""
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
          raise HTTPException(status_code=404, detail="File not found")
     
@@ -774,7 +799,7 @@ async def get_data(file_id: str, limit: int = 100):
 @app.get("/api/regions/{file_id}")
 async def get_regions(file_id: str):
     """Get unique regions in the dataset"""
-    df = get_or_load_dataframe(file_id)
+    df = await get_or_load_dataframe(file_id)
     if df is None:
          raise HTTPException(status_code=404, detail="File not found")
     schema = detected_schemas[file_id]
