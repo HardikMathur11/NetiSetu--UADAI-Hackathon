@@ -467,7 +467,7 @@ async def get_history():
     # Try for up to 5 seconds (Render usually takes 2-5s if it was just hit)
     for attempt in range(5):
         datasets_col = get_collection("datasets")
-        if datasets_col:
+        if datasets_col is not None:
             try:
                 # Fetch latest 20 uploads
                 cursor = datasets_col.find(
