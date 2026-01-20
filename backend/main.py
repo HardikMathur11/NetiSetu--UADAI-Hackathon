@@ -460,23 +460,31 @@ async def upload_csv(file: UploadFile = File(...)):
 
 @app.get("/api/history")
 async def get_history():
-    """Get list of previously uploaded datasets"""
-    datasets_col = get_collection("datasets")
-    if datasets_col is None:
-        return {"history": []}
+    """Get list of previously uploaded datasets (with retry for Wake-Up)"""
+    import asyncio
+    
+    # Retry loop to handle "DB Waking Up" silently
+    # Try for up to 5 seconds (Render usually takes 2-5s if it was just hit)
+    for attempt in range(5):
+        datasets_col = get_collection("datasets")
+        if datasets_col:
+            try:
+                # Fetch latest 20 uploads
+                cursor = datasets_col.find(
+                    {}, 
+                    {"_id": 0, "file_id": 1, "filename": 1, "upload_timestamp": 1, "row_count": 1, "column_count": 1}
+                ).sort("upload_timestamp", -1).limit(20)
+                
+                history = await cursor.to_list(length=20)
+                return {"history": history}
+            except Exception as e:
+                print(f"History fetch attempt {attempt+1} failed: {e}")
         
-    try:
-        # Fetch latest 20 uploads (excluding huge fields like 'schema' if not needed initially, but we might want schema info)
-        cursor = datasets_col.find(
-            {}, 
-            {"_id": 0, "file_id": 1, "filename": 1, "upload_timestamp": 1, "row_count": 1, "column_count": 1}
-        ).sort("upload_timestamp", -1).limit(20)
+        # Wait before retry
+        await asyncio.sleep(1)
         
-        history = await cursor.to_list(length=20)
-        return {"history": history}
-    except Exception as e:
-        print(f"Error fetching history: {e}")
-        return {"history": []}
+    print("History fetch gave up after 5 retries.")
+    return {"history": []}
 
 
 @app.get("/api/schema/{file_id}", response_model=SchemaResponse)
