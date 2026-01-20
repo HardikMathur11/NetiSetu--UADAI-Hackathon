@@ -313,6 +313,72 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/api/debug-connection")
+async def debug_connection():
+    """Diagnostic endpoint to check DB connection state"""
+    status = {
+        "mongo_uri_configured": bool(os.getenv("MONGO_URI")),
+        "client_initialized": False,
+        "ping_success": False,
+        "error": None
+    }
+    
+    try:
+        # Check Client logic manually
+        if Database.client is None:
+            # Trigger lazy load
+            db = Database.get_db()
+        else:
+            db = Database.client[Database.db_name]
+            
+        if Database.client is not None:
+             status["client_initialized"] = True
+             try:
+                 await Database.client.admin.command('ping')
+                 status["ping_success"] = True
+             except Exception as e:
+                 status["error"] = f"Ping failed: {str(e)}"
+        else:
+             status["error"] = "Client failed to initialize (Lazy load returned None)"
+             
+    except Exception as e:
+        status["error"] = f"Unexpected error: {str(e)}"
+        
+    return status
+
+@app.get("/api/debug-connection")
+async def debug_connection():
+    """Diagnostic endpoint to check DB connection state"""
+    status = {
+        "mongo_uri_configured": bool(os.getenv("MONGO_URI")),
+        "client_initialized": False,
+        "ping_success": False,
+        "error": None
+    }
+    
+    try:
+        # Check Client logic manually
+        if Database.client is None:
+            # Trigger lazy load
+            db = Database.get_db()
+        else:
+            db = Database.client[Database.db_name]
+            
+        if Database.client is not None:
+             status["client_initialized"] = True
+             try:
+                 await Database.client.admin.command('ping')
+                 status["ping_success"] = True
+             except Exception as e:
+                 status["error"] = f"Ping failed: {str(e)}"
+        else:
+             status["error"] = "Client failed to initialize (Lazy load returned None)"
+             
+    except Exception as e:
+        status["error"] = f"Unexpected error: {str(e)}"
+        
+    return status
+
 
 @app.post("/api/upload", response_model=UploadResponse)
 async def upload_csv(file: UploadFile = File(...)):
